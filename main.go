@@ -1,92 +1,227 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
+	"encoding/binary"
+	"math"
 )
 
-type Vector struct {
-	x, y, z float32
-}
-
-type Face struct {
-	v1, v2, v3 int
-}
-
 func main() {
-	strip1 := []Vector{
-		{1.0, -1.0, 1.0},
-		{1.0, -1.0, -1.0},
-		{1.0, 1.0, 1.0},
-		{1.0, 1.0, -1.0},
-		{-1.0, 1.0, 1.0},
-		{-1.0, 1.0, -1.0},
-		{-1.0, -1.0, 1.0},
-		{-1.0, -1.0, -1.0},
-	}
-
-	strip2 := []Vector{
-		{-1.0, 1.0, 1.0},
-		{1.0, 1.0, 1.0},
-		{-1.0, -1.0, 1.0},
-		{1.0, -1.0, 1.0},
-		{-1.0, -1.0, -1.0},
-		{1.0, -1.0, -1.0},
-		{-1.0, 1.0, -1.0},
-		{1.0, 1.0, -1.0},
-	}
-
-	MakeStripModel(strip1, strip2)
+	ModelTest()
 }
 
-func MakeStripModel(strip ...[]Vector) {
-	// Check every vartice slice if they are greater than 3 len
-	for _, v := range strip {
-		if len(v) < 3 {
-			panic("ERROR: There must at least 3 vertices in the strip")
-		}
+func ModelTest() {
+	// Vertices array is 0x37 / 55 in size
+	// Each vector is 12 bytes (a 4 byte float32 times 3)
+	// size 55 times 12 is 660 bytes. thats how long all the vertices take
+
+	//data := "42B6EE42 9B5890C1 7AC03140 65F9E042 0350A2C1 A5A7E23F 65F9E042 0350A2C1 1C5A003F 7E05CD42 2F16A7C1 EEEF883F 7E05CD42 2F16A7C1 3E05BCBF 7E05CD42 2F16A7C1 EEEF883F 00151042 A13994C1 50AD9EBE 00151042 A13994C1 A9A40E40 99F4A8C0 56E297C1 BDA9FD3F 532E01C3 72DCA2C1 FECA9E3F 532E01C3 BFC1A241 FECA9E3F 532E01C3 72DCA2C1 C729A6BF 532E01C3 BFC1A241 C729A6BF 00151042 A13994C1 50AD9EBE 99F4A8C0 56E297C1 BDA9FD3F 99F4A8C0 56E297C1 E2950EBF 25523AC2 0A8B9BC1 290ADE3F 25523AC2 0A8B9BC1 1CD54DBF DDC2AFC2 BF339FC1 946ABE3F DDC2AFC2 BF339FC1 2C8A86BF 532E01C3 72DCA2C1 FECA9E3F 532E01C3 72DCA2C1 C729A6BF 532E01C3 72DCA2C1 C729A6BF 532E01C3 BFC1A241 C729A6BF DDC2AFC2 BF339FC1 2C8A86BF DDC2AFC2 DE169F41 2C8A86BF 25523AC2 0A8B9BC1 1CD54DBF 25523AC2 FE6B9B41 1CD54DBF 99F4A8C0 56E297C1 E2950EBF 99F4A8C0 1EC19741 E3950EBF 00151042 A13994C1 50AD9EBE 00151042 40169441 50AD9EBE D92BD342 000020B3 3E05BCBF 7E05CD42 2F16A741 3E05BCBF 65F9E042 1A50A241 1C5A003F 00151042 A13994C1 50AD9EBE D92BD342 000020B3 3E05BCBF 7E05CD42 2F16A7C1 3E05BCBF D92BD342 000020B3 3E05BCBF 65F9E042 0350A2C1 1C5A003F D92BD342 000020B3 3E05BCBF 42B6EE42 9B5890C1 7AC03140 D92BD342 000020B3 3E05BCBF 97C6FA42 A97057C1 0FFF8F40 D92BD342 000020B3 3E05BCBF FC530143 6D3DE4C0 31F0B640 D92BD342 000020B3 3E05BCBF 7ED40243 0030CF36 0F5CC040 D92BD342 000020B3 3E05BCBF FC530143 833DE440 31F0B640 D92BD342 000020B3 3E05BCBF 97C6FA42 D1705741 0FFF8F40 D92BD342 000020B3 3E05BCBF 42B6EE42 BC589041 7AC03140 65F9E042 1A50A241 1C5A003F"
+	//StringToStruct("strips.txt", data)
+
+	rawStrips := []uint32{
+		0x42B6EE42,
+		0x9B5890C1,
+		0x7AC03140,
+		0x65F9E042,
+		0x0350A2C1,
+		0xA5A7E23F,
+		0x65F9E042,
+		0x0350A2C1,
+		0x1C5A003F,
+		0x7E05CD42,
+		0x2F16A7C1,
+		0xEEEF883F,
+		0x7E05CD42,
+		0x2F16A7C1,
+		0x3E05BCBF,
+		0x7E05CD42,
+		0x2F16A7C1,
+		0xEEEF883F,
+		0x00151042,
+		0xA13994C1,
+		0x50AD9EBE,
+		0x00151042,
+		0xA13994C1,
+		0xA9A40E40,
+		0x99F4A8C0,
+		0x56E297C1,
+		0xBDA9FD3F,
+		0x532E01C3,
+		0x72DCA2C1,
+		0xFECA9E3F,
+		0x532E01C3,
+		0xBFC1A241,
+		0xFECA9E3F,
+		0x532E01C3,
+		0x72DCA2C1,
+		0xC729A6BF,
+		0x532E01C3,
+		0xBFC1A241,
+		0xC729A6BF,
+		0x00151042,
+		0xA13994C1,
+		0x50AD9EBE,
+		0x99F4A8C0,
+		0x56E297C1,
+		0xBDA9FD3F,
+		0x99F4A8C0,
+		0x56E297C1,
+		0xE2950EBF,
+		0x25523AC2,
+		0x0A8B9BC1,
+		0x290ADE3F,
+		0x25523AC2,
+		0x0A8B9BC1,
+		0x1CD54DBF,
+		0xDDC2AFC2,
+		0xBF339FC1,
+		0x946ABE3F,
+		0xDDC2AFC2,
+		0xBF339FC1,
+		0x2C8A86BF,
+		0x532E01C3,
+		0x72DCA2C1,
+		0xFECA9E3F,
+		0x532E01C3,
+		0x72DCA2C1,
+		0xC729A6BF,
+		0x532E01C3,
+		0x72DCA2C1,
+		0xC729A6BF,
+		0x532E01C3,
+		0xBFC1A241,
+		0xC729A6BF,
+		0xDDC2AFC2,
+		0xBF339FC1,
+		0x2C8A86BF,
+		0xDDC2AFC2,
+		0xDE169F41,
+		0x2C8A86BF,
+		0x25523AC2,
+		0x0A8B9BC1,
+		0x1CD54DBF,
+		0x25523AC2,
+		0xFE6B9B41,
+		0x1CD54DBF,
+		0x99F4A8C0,
+		0x56E297C1,
+		0xE2950EBF,
+		0x99F4A8C0,
+		0x1EC19741,
+		0xE3950EBF,
+		0x00151042,
+		0xA13994C1,
+		0x50AD9EBE,
+		0x00151042,
+		0x40169441,
+		0x50AD9EBE,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x7E05CD42,
+		0x2F16A741,
+		0x3E05BCBF,
+		0x65F9E042,
+		0x1A50A241,
+		0x1C5A003F,
+		0x00151042,
+		0xA13994C1,
+		0x50AD9EBE,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x7E05CD42,
+		0x2F16A7C1,
+		0x3E05BCBF,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x65F9E042,
+		0x0350A2C1,
+		0x1C5A003F,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x42B6EE42,
+		0x9B5890C1,
+		0x7AC03140,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x97C6FA42,
+		0xA97057C1,
+		0x0FFF8F40,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0xFC530143,
+		0x6D3DE4C0,
+		0x31F0B640,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x7ED40243,
+		0x0030CF36,
+		0x0F5CC040,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0xFC530143,
+		0x833DE440,
+		0x31F0B640,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x97C6FA42,
+		0xD1705741,
+		0x0FFF8F40,
+		0xD92BD342,
+		0x000020B3,
+		0x3E05BCBF,
+		0x42B6EE42,
+		0xBC589041,
+		0x7AC03140,
+		0x65F9E042,
+		0x1A50A241,
+		0x1C5A003F,
 	}
 
-	finalVecs := []Vector{}
-	fs := []Face{}
+	// Raw Strips to float32 vectors
+	strips := make([]Vector, 0, 55)
+	for i := 0; i < len(rawStrips); i += 3 {
+		// Make the values little endian
+		b1, b2, b3 := make([]byte, 4), make([]byte, 4), make([]byte, 4)
+		binary.LittleEndian.PutUint32(b1, rawStrips[i])
+		binary.LittleEndian.PutUint32(b2, rawStrips[i+1])
+		binary.LittleEndian.PutUint32(b3, rawStrips[i+2])
+		x := binary.BigEndian.Uint32(b1)
+		y := binary.BigEndian.Uint32(b2)
+		z := binary.BigEndian.Uint32(b3)
+		x1 := math.Float32frombits(x)
+		y1 := math.Float32frombits(y)
+		z1 := math.Float32frombits(z)
 
-	for i, v := range strip {
-		// Put all the vertices in one Slice
-		finalVecs = append(finalVecs, v...)
-
-		// For each strip position
-		for j := range v {
-			// Skip if position is too small for a face
-			if j < 2 {
-				continue
-			}
-
-			// Make face
-			h := j + (i * len(v))
-			h++ // first vertex must be 1
-			fs = append(fs, Face{h, h - 1, h - 2})
-		}
+		vec := Vector{x1, y1, z1}
+		strips = append(strips, vec)
 	}
 
-	MakeModel(finalVecs, fs)
+	rawSplits := []int{
+		0x09,
+		0x04,
+		0x09,
+		0x0D,
+		0x14,
+	}
+
+	splits := []int{0}
+	for _, v := range rawSplits {
+		splits = append(splits, splits[len(splits)-1]+v)
+	}
+
+	MakeSplitStripModel("Model.obj", splits, strips)
 }
 
-func MakeModel(vertices []Vector, faces []Face) {
-	f, err := os.Create("Model.obj")
-	if err != nil {
-		panic("Failed to create file")
-	}
-	defer f.Close()
+/*
 
-	for _, v := range vertices {
-		fmt.Fprintln(f, "v", v.x, v.y, v.z)
-	}
-	for _, v := range faces {
-		fmt.Fprintln(f, "f", v.v1, v.v2, v.v3)
-	}
 
-	content, err := ioutil.ReadFile("Model.obj")
-	fmt.Println(string(content))
-	fmt.Println("SUCCESS: Succesfully made the Model")
-}
+
+ */

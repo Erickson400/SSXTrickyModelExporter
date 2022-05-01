@@ -14,11 +14,11 @@ func ModelTest() {
 
 	strips := RawStripsToVectors(TopOfBoardStrips)
 	splits := RawSplitsToIncremental(TopOfBoardSplits)
-	MakeSplitStripModel("Top.obj", splits, strips)
+	MakeSplitStripModel("resources/Top.obj", splits, strips)
 
 	strips1 := RawStripsToVectors(BottomOfBoardStrips)
 	splits1 := RawSplitsToIncremental(BottomOfBoardSplits)
-	MakeSplitStripModel("Bottom.obj", splits1, strips1)
+	MakeSplitStripModel("resources/Bottom.obj", splits1, strips1)
 }
 
 /*

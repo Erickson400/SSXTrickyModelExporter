@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -79,7 +78,8 @@ func MakeModel(filename string, vertices []Vector, faces []Face) {
 		fmt.Fprintln(f, "f", v.V1+1, v.V2+1, v.V3+1)
 	}
 
-	content, err := ioutil.ReadFile("Model.obj")
-	fmt.Println(string(content))
-	fmt.Println("SUCCESS: Succesfully made the Model")
+	//content, err := ioutil.ReadFile(filename)
+	//fmt.Println(string(content))
+	fmt.Printf("SUCCESS: Succesfully made '%v'\n", filename)
+
 }

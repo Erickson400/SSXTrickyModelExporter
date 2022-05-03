@@ -6,15 +6,16 @@ import (
 	"strings"
 )
 
-type Vector struct {
-	X, Y, Z float32
-}
-
 type Face struct {
 	V1, V2, V3 int
 }
 
-func MakeSplitStripModel(filename string, splits []int, vertices []Vector) {
+func ModelFromMesh(filename string, mesh Mesh) {
+	splits := RawStripCountersToIncremental(mesh.StripCounters)
+	MakeSplitStripModel(filename, splits, mesh.Verts)
+}
+
+func MakeSplitStripModel(filename string, splits []int, vertices []Vertex) {
 	// splits are the first vertex of a strip. does not make a face that connects to the vertex behind,
 	// vertices are all the vertices the model uses from all strips combined.
 
@@ -60,7 +61,7 @@ func MakeSplitStripModel(filename string, splits []int, vertices []Vector) {
 	MakeModel(filename, vertices, finalFs)
 }
 
-func MakeModel(filename string, vertices []Vector, faces []Face) {
+func MakeModel(filename string, vertices []Vertex, faces []Face) {
 	if !strings.HasSuffix(filename, ".obj") {
 		filename += ".obj"
 	}

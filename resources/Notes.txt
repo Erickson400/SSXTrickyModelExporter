@@ -1,0 +1,24 @@
+
+
+.mpf tree
+
+Model
+--Mesh
+	--Strip Counter
+	--UV
+	--Normals
+	--Vertices
+	--Footer
+		01000010 00000000 00000000 00000000 
+		01010001 0A000014 06000014 06000014
+--Footer: 
+	01000060 00000000 00000000 00000000 
+	00000000 01010001 00000000 00000000
+
+
+look for pushing pppp
+look for pushing @@@@
+
+
+
+

@@ -1,10 +1,38 @@
 package main
 
+import (
+	"fmt"
+	"strconv"
+)
+
 func main() {
 	ModelTest()
 }
 
 func ModelTest() {
+	data, err := ReadMpf("resources/board.mpf")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	meshes := []Mesh{}
+	for i := 0; i < 19; i++ {
+		myMesh, err := DataToMesh(data, i)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		meshes = append(meshes, myMesh)
+	}
+
+	for i, v := range meshes {
+		filename := "resources/myMesh" + strconv.FormatInt(int64(i), 10) + ".onj"
+		ModelFromMesh(filename, v)
+	}
+
+	// fmt.Printf("%+v\n", myMesh)
+
 	// Vertices array is 0x37 / 55 in size
 	// Each vector is 12 bytes (a 4 byte float32 times 3)
 	// size 55 times 12 is 660 bytes. thats how long all the vertices take
@@ -12,13 +40,13 @@ func ModelTest() {
 	//data := "532E01C3 BFC1A241 C729A6BF 532E01C3 BFC1A241 FECA9E3F DDC2AFC2 DE169F41 2C8A86BF DDC2AFC2 DE169F41 946ABE3F 25523AC2 FE6B9B41 1CD54DBF 25523AC2 FE6B9B41 280ADE3F 99F4A8C0 1EC19741 E3950EBF 99F4A8C0 1EC19741 BDA9FD3F 00151042 40169441 50AD9EBE 00151042 40169441 A9A40E40 7E05CD42 2F16A741 EDEF883F 00151042 40169441 50AD9EBE 7E05CD42 2F16A741 EDEF883F 7E05CD42 2F16A741 3E05BCBF 7E05CD42 2F16A741 EDEF883F 65F9E042 1A50A241 1C5A003F 65F9E042 1A50A241 A4A7E23F 42B6EE42 BC589041 7AC03140 532E01C3 BFC1A241 FECA9E3F 532E01C3 72DCA2C1 FECA9E3F DDC2AFC2 DE169F41 946ABE3F DDC2AFC2 BF339FC1 946ABE3F 25523AC2 FE6B9B41 280ADE3F 25523AC2 0A8B9BC1 290ADE3F 99F4A8C0 1EC19741 BDA9FD3F 99F4A8C0 56E297C1 BDA9FD3F 00151042 40169441 A9A40E40 00151042 A13994C1 A9A40E40 D92BD342 000020B3 EEEF883F 7E05CD42 2F16A7C1 EEEF883F 65F9E042 0350A2C1 A5A7E23F 00151042 40169441 A9A40E40 D92BD342 000020B3 EEEF883F 7E05CD42 2F16A741 EDEF883F D92BD342 000020B3 EEEF883F 65F9E042 1A50A241 A4A7E23F D92BD342 000020B3 EEEF883F 42B6EE42 BC589041 7AC03140 D92BD342 000020B3 EEEF883F 97C6FA42 D1705741 0FFF8F40 D92BD342 000020B3 EEEF883F FC530143 833DE440 31F0B640 D92BD342 000020B3 EEEF883F 7ED40243 0030CF36 0F5CC040 D92BD342 000020B3 EEEF883F FC530143 6D3DE4C0 31F0B640 D92BD342 000020B3 EEEF883F 97C6FA42 A97057C1 0FFF8F40 D92BD342 000020B3 EEEF883F 42B6EE42 9B5890C1 7AC03140 65F9E042 0350A2C1 A5A7E23F"
 	//StringToStruct("strips.txt", data)
 
-	strips := RawStripsToVectors(TopOfBoardStrips)
-	splits := RawSplitsToIncremental(TopOfBoardSplits)
-	MakeSplitStripModel("resources/Top.obj", splits, strips)
+	// strips := RawStripsToVectors(TopOfBoardStrips)
+	// splits := RawSplitsToIncremental(TopOfBoardSplits)
+	// MakeSplitStripModel("resources/Top.obj", splits, strips)
 
-	strips1 := RawStripsToVectors(BottomOfBoardStrips)
-	splits1 := RawSplitsToIncremental(BottomOfBoardSplits)
-	MakeSplitStripModel("resources/Bottom.obj", splits1, strips1)
+	// strips1 := RawStripsToVectors(BottomOfBoardStrips)
+	// splits1 := RawSplitsToIncremental(BottomOfBoardSplits)
+	// MakeSplitStripModel("resources/Bottom.obj", splits1, strips1)
 }
 
 /*

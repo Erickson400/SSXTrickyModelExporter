@@ -45,11 +45,11 @@ func ReadMpf(filename string) ([]byte, error) {
 		filename += ".mpf"
 	}
 
-	content, err := os.ReadFile(filename) // the file is inside the local directory
+	data, err := os.ReadFile(filename) // the file is inside the local directory
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read .mpf file")
 	}
-	return content, nil
+	return data, nil
 }
 
 func FindPattern(data []byte, tolerance int, pattern []byte) (position int, err error) {

@@ -3,19 +3,36 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
+	"strconv"
 )
 
 type Face struct {
 	V1, V2, V3 int
 }
 
-func ModelFromMesh(filename string, mesh Mesh) {
-	splits := RawStripCountersToIncremental(mesh.StripCounters)
-	MakeSplitStripModel(filename, splits, mesh.Verts)
+func ModelFromMeshArray(filepath string, meshes []Mesh) error {
+	f, err := os.Create(filepath + "/mesh.obj")
+	if err != nil {
+		return fmt.Errorf("Failed to create file")
+	}
+	defer f.Close()
+
+	for i, m := range meshes {
+		fmt.Fprintf(f, "o mesh%v\n", strconv.FormatInt(int64(i), 10))
+		splits := RawStripCountersToIncremental(m.StripCounters)
+		verts, faces := MakeSplitStripModel(splits, m.Verts)
+		content := MakeModel(verts, faces)
+		fmt.Fprintln(f, content)
+	}
+	return nil
 }
 
-func MakeSplitStripModel(filename string, splits []int, vertices []Vertex) {
+// func ModelFromMesh(filename string, mesh Mesh) {
+// 	splits := RawStripCountersToIncremental(mesh.StripCounters)
+// 	MakeSplitStripModel(filename, splits, mesh.Verts)
+// }
+
+func MakeSplitStripModel(splits []int, vertices []Vertex) ([]Vertex, []Face) {
 	// splits are the first vertex of a strip. does not make a face that connects to the vertex behind,
 	// vertices are all the vertices the model uses from all strips combined.
 
@@ -57,30 +74,15 @@ func MakeSplitStripModel(filename string, splits []int, vertices []Vertex) {
 		AddFace(globalIndex)
 		localIndex++
 	}
-
-	MakeModel(filename, vertices, finalFs)
+	return vertices, finalFs
 }
 
-func MakeModel(filename string, vertices []Vertex, faces []Face) {
-	if !strings.HasSuffix(filename, ".obj") {
-		filename += ".obj"
-	}
-
-	f, err := os.Create(filename)
-	if err != nil {
-		panic("Failed to create file")
-	}
-	defer f.Close()
-
+func MakeModel(vertices []Vertex, faces []Face) (out string) {
 	for _, v := range vertices {
-		fmt.Fprintln(f, "v", v.X, v.Y, v.Z)
+		out += fmt.Sprintln("v", v.X, v.Y, v.Z)
 	}
 	for _, v := range faces {
-		fmt.Fprintln(f, "f", v.V1+1, v.V2+1, v.V3+1)
+		out += fmt.Sprintln("f", v.V1+1, v.V2+1, v.V3+1)
 	}
-
-	//content, err := ioutil.ReadFile(filename)
-	//fmt.Println(string(content))
-	fmt.Printf("SUCCESS: Succesfully made '%v'\n", filename)
-
+	return
 }
